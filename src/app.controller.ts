@@ -1,8 +1,8 @@
-import { Controller, Get, Param, Post, Put } from '@nestjs/common';
-import { AppService } from './app.service';
+import { Controller, Delete, Get, Param, Post, Put } from '@nestjs/common'
+import { AppService } from './app.service'
 
-import { PrismaService } from './prisma.service';
-import { User as UserModel } from '@prisma/client';
+import { PrismaService } from './prisma.service'
+import { User as UserModel } from '@prisma/client'
 
 @Controller()
 export class AppController {
@@ -36,6 +36,15 @@ export class AppController {
     await this.prismaService.user.update({
       where: { id: 1 },
       data: { email: 'youngjae@daily-funding.com' },
+    })
+  }
+
+  @Delete('/users/:id')
+  async deleteUser() {
+    await this.prismaService.user.delete({
+      where: {
+        id: 1,
+      },
     })
   }
 }
