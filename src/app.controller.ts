@@ -1,16 +1,19 @@
 import { Controller, Get, Param, Post, Put } from '@nestjs/common';
 import { AppService } from './app.service';
 
-import { PrismaService } from './prisma.service'
-import { Post as PostModel, User as UserModel } from '@prisma/client'
+import { PrismaService } from './prisma.service';
+import { User as UserModel } from '@prisma/client';
 
 @Controller()
 export class AppController {
-  constructor(private readonly appService: AppService, private readonly prismaService: PrismaService) {}
+  constructor(
+    private readonly appService: AppService,
+    private readonly prismaService: PrismaService,
+  ) {}
 
   @Get()
   getHello(): string {
-    return this.appService.getHello();
+    return this.appService.getHello()
   }
 
   @Get('/users/:id')
@@ -22,9 +25,9 @@ export class AppController {
   async saveUser(@Param('id') id: string) {
     await this.prismaService.user.create({
       data: {
-        name: "김영재",
-        email: "geniusk1047@naver.com"
-      }
+        name: '김영재',
+        email: 'geniusk1047@naver.com',
+      },
     })
   }
 
