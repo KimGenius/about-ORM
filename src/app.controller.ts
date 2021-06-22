@@ -16,6 +16,17 @@ export class AppController {
     return this.appService.getHello()
   }
 
+  @Get('/users')
+  async getUsers(@Param('id') id: string): Promise<UserModel[]> {
+    const result = []
+    for (let i = 0; i < 1000000; i++) {
+      console.log(i)
+      result.push(await this.prismaService.user.findMany())
+    }
+    return result
+  }
+
+
   @Get('/users/:id')
   async getUserById(@Param('id') id: string): Promise<UserModel> {
     return this.prismaService.user.findUnique({ where: { id: Number(id) } })
@@ -23,12 +34,14 @@ export class AppController {
 
   @Post('/users')
   async saveUser(@Param('id') id: string) {
-    await this.prismaService.user.create({
-      data: {
+    const data = []
+    for (let i = 0; i < 31000; i++) {
+      data.push({
         name: '김영재',
-        email: 'geniusk1047@naver.com',
-      },
-    })
+        email: `${Math.random().toString(36).substr(2,11)}@${Math.random().toString(36).substr(2,11)}.com`,
+      })
+    }
+    await this.prismaService.user.createMany({ data })
   }
 
   @Put('/users/:id')
