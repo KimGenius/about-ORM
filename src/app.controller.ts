@@ -60,4 +60,12 @@ export class AppController {
       },
     })
   }
+
+  @Get('/users/:id/posts')
+  async getUserPostList(@Param('id') id: string): Promise<UserModel> {
+    return await this.prismaService.user.findUnique({
+      where: { id: Number(id) },
+      include: { posts: true },
+    })
+  }
 }
