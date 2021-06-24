@@ -45,7 +45,7 @@ export class AppController {
   @Post('/users')
   async saveUser() {
     const data = []
-    for (let i = 0; i < 10000; i++) {
+    for (let i = 0; i < 200000; i++) {
       data.push({
         name: '김영재',
         email: `${Math.random().toString(36).substr(2, 11)}@${Math.random()
@@ -119,6 +119,19 @@ export class AppController {
         .toString(36)
         .substr(2, 11)}" WHERE ${OR}`,
     )
+  }
+
+  @Delete('/users')
+  async deleteUserAll() {
+    const label = Math.random().toString(36).substr(1, 8)
+    console.time('Query' + label)
+    await this.prismaService.user.deleteMany()
+    console.timeEnd('Query' + label)
+  }
+
+  @Delete('/users-raw')
+  async deleteUserAllRaw() {
+    await this.mysqlService.query('DELETE FROM user')
   }
 
   @Delete('/users/:id')
