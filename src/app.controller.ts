@@ -7,11 +7,16 @@ import { MysqlService } from './mysql.service'
 
 @Controller()
 export class AppController {
+  private START_IDX: number
+  private END_IDX: number
   constructor(
     private readonly appService: AppService,
     private readonly prismaService: PrismaService,
     private readonly mysqlService: MysqlService,
-  ) {}
+  ) {
+    this.START_IDX = 1830001
+    this.END_IDX = 2030000
+  }
 
   @Get()
   getHello(): string {
@@ -67,13 +72,53 @@ export class AppController {
       `INSERT INTO user(name, email) VALUES ${data}`,
     )
   }
-
-  @Put('/users/:id')
+  @Put('/users')
   async updateUser() {
-    await this.prismaService.user.update({
-      where: { id: 1 },
-      data: { email: 'youngjae@daily-funding.com' },
+    const targetList = []
+    for (let i = 0; i < 300; i++) {
+      const targetIdx = Math.floor(
+        Math.random() * (this.END_IDX - this.START_IDX + 1) + this.START_IDX,
+      )
+      if (!targetList.includes(targetIdx)) {
+        targetList.push(targetIdx)
+        i--
+      }
+    }
+    const OR = []
+    for (const id of targetList) {
+      OR.push({ id })
+    }
+    const label = Math.random().toString(36).substr(1, 8)
+    console.time('Query' + label)
+    await this.prismaService.user.updateMany({
+      where: { OR },
+      data: { dummy: `${Math.random().toString(36).substr(2, 11)}` },
     })
+    console.timeEnd('Query' + label)
+  }
+
+  @Put('/users-raw')
+  async updateUserRaw() {
+    const targetList = []
+    for (let i = 0; i < 300; i++) {
+      const targetIdx = Math.floor(
+        Math.random() * (this.END_IDX - this.START_IDX + 1) + this.START_IDX,
+      )
+      if (!targetList.includes(targetIdx)) {
+        targetList.push(targetIdx)
+        i--
+      }
+    }
+    let OR = ''
+    for (const id of targetList) {
+      OR += `id = ${id} OR `
+    }
+    OR = OR.substr(0, OR.length - 3)
+    await this.mysqlService.query(
+      `UPDATE user SET dummy = "${Math.random()
+        .toString(36)
+        .substr(2, 11)}" WHERE ${OR}`,
+    )
   }
 
   @Delete('/users/:id')
