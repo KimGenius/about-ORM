@@ -15,6 +15,13 @@ model User {
   posts Post[]
 }
 
+// Define the `User` table in the database
+model User2 {
+  id    Int     @id @default(autoincrement())
+  name  String?
+  email String  @unique
+}
+
 // Define the `Post` table in the database
 model Post {
   id        Int      @id @default(autoincrement())

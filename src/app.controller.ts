@@ -3,12 +3,14 @@ import { AppService } from './app.service'
 
 import { PrismaService } from './prisma.service'
 import { User as UserModel } from '@prisma/client'
+import { MysqlService } from './mysql.service'
 
 @Controller()
 export class AppController {
   constructor(
     private readonly appService: AppService,
     private readonly prismaService: PrismaService,
+    private readonly mysqlService: MysqlService,
   ) {}
 
   @Get()
@@ -17,13 +19,17 @@ export class AppController {
   }
 
   @Get('/users')
-  async getUsers(@Param('id') id: string): Promise<UserModel[]> {
-    const result = []
-    for (let i = 0; i < 1000000; i++) {
-      console.log(i)
-      result.push(await this.prismaService.user.findMany())
-    }
-    return result
+  async getUsers() {
+    const label = Math.random().toString(36).substr(1, 8)
+    console.time('Query' + label)
+    await this.prismaService.user.findMany()
+    console.timeEnd('Query' + label)
+  }
+
+  @Get('/users-raw')
+  async getUsersRaw() {
+    const label = Math.random().toString(36).substr(1, 8)
+    await this.mysqlService.query('SELECT * FROM user;')
   }
 
   @Get('/users/:id')
@@ -32,9 +38,9 @@ export class AppController {
   }
 
   @Post('/users')
-  async saveUser(@Param('id') id: string) {
+  async saveUser() {
     const data = []
-    for (let i = 0; i < 30000; i++) {
+    for (let i = 0; i < 10000; i++) {
       data.push({
         name: '김영재',
         email: `${Math.random().toString(36).substr(2, 11)}@${Math.random()
@@ -42,37 +48,23 @@ export class AppController {
           .substr(2, 11)}.com`,
       })
     }
-    console.time('Query')
-    await this.prismaService.user.createMany({ data })
-    console.timeEnd('Query')
+    const label = Math.random().toString(36).substr(1, 8)
+    console.time('Query' + label)
+    await this.prismaService.user2.createMany({ data })
+    console.timeEnd('Query' + label)
   }
 
   @Post('/users-raw')
   async saveUserRaw() {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const mysql = require('mysql2')
-    const connection = mysql.createConnection({
-      host: 'localhost',
-      user: 'root',
-      password: 'Rladudwo132!3@',
-      database: 'node_orm',
-    })
-    connection.connect()
     let data = ''
-    for (let i = 0; i < 30000; i++) {
+    for (let i = 0; i < 200000; i++) {
       data += `("김영재", "${Math.random()
         .toString(36)
         .substr(2, 11)}@${Math.random().toString(36).substr(2, 11)}.com"), `
     }
     data = data.substr(0, data.length - 2)
-    console.time('Query')
-    connection.query(
+    await this.mysqlService.query(
       `INSERT INTO user(name, email) VALUES ${data}`,
-      function (error, results, fields) {
-        if (error) throw error
-        console.timeEnd('Query')
-        connection.end()
-      },
     )
   }
 
